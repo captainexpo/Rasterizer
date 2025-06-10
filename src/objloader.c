@@ -74,7 +74,7 @@ int countSpaces(char *buf) {
 }
 
 RasterizerModel *parseFile(char buf[]) {
-  RasterizerModel *model = (RasterizerModel *)malloc(sizeof(RasterizerModel));
+  RasterizerModel *model = malloc(sizeof(RasterizerModel));
   int numVerts = 0;
   int numTriangles = 0;
   int numTexCoords = 0;

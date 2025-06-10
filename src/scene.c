@@ -7,10 +7,8 @@
 #include <math.h>
 #include <raylib.h>
 #include <stdio.h>
-#include <stdlib.h>
-#define NUM_MODELS 1
 
-RasterizerModel *models[NUM_MODELS] = {0};
+RasterizerModel **models;
 RasterizerCamera camera = {
     .FOV = 60.0f,
     .backgroundColor = {100, 100, 150},
@@ -63,8 +61,8 @@ void sceneUpdate(float deltaTime) {
 
 void sceneStart(int argc, char **argv) {
   (void)argc;
-  printf("Starting scene with %d models\n", NUM_MODELS);
-  models[0] = loadOBJFile("../models/Quake_axe.obj");
+  models = malloc(sizeof(RasterizerModel *) * 2);
+  models[0] = loadOBJFile("../models/shambler.obj");
   models[0]->transform = (ModelTransform){
       .pitch = 0,
       .yaw = 0,
@@ -73,18 +71,7 @@ void sceneStart(int argc, char **argv) {
       .scale = 0.1f,
   };
   models[0]->texture = readPNGImage(argv[1]);
-}
-
-Frame frame;
-Frame *getFrame(void) {
-  // Clear frame data
-  frame.data = malloc(sizeof(float3) * WINDOW_WIDTH * WINDOW_HEIGHT);
-  for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
-    frame.data[i] = camera.backgroundColor;
-  }
-
-  for (int i = 0; i < NUM_MODELS; i++) {
-    drawModel(models[i], &frame, &camera);
-  }
-  return &frame;
+  models[1] = NULL;
+  RASTERIZER_MODEL_QUEUE = models;
+  RASTERIZER_MAIN_CAMERA = &camera;
 }

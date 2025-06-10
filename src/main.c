@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   while (!WindowShouldClose()) {
     initFrame();
-    Frame *frame = getFrame();
+    Frame *frame = getFrame(RASTERIZER_MAIN_CAMERA, RASTERIZER_MODEL_QUEUE);
     BeginDrawing();
     sceneUpdate(GetFrameTime());
     drawFrame(frame);

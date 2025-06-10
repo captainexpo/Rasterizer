@@ -6,6 +6,10 @@
 #include <math.h>
 #include <stdio.h>
 
+// Extern definitions
+RasterizerModel **RASTERIZER_MODEL_QUEUE;
+RasterizerCamera *RASTERIZER_MAIN_CAMERA;
+
 float clamp(float value, float min, float max) {
   if (value < min)
     return min;
@@ -19,13 +23,15 @@ float3 getColorAtPoint(RasterizerModel *model, float2 texCoord) {
   int rows = model->texture->rows;
 
   int x = ((int)(texCoord.x * cols) % cols + cols) % cols;
-  int y = ((int)(texCoord.y * rows) % rows + rows) % rows;
+  int y = rows - (((int)(texCoord.y * rows) % rows + rows) %
+                  rows); // HACK: Dunno why this needs to be inverted, but it
+                         // does ¯\_(ツ)_/¯
   if (x < 0 || y < 0) {
     printf("Invalid texture coordinates: (%d, %d) for texture size (%d, %d) "
            "(%f, %f)\n",
            x, y, cols, rows, texCoord.x, texCoord.y);
   }
-  float3 pixel = model->texture->cmap[y * model->texture->rows + x];
+  float3 pixel = model->texture->cmap[y * model->texture->cols + x];
   return pixel;
 }
 
@@ -188,4 +194,18 @@ float3 worldPointToScreen(RasterizerCamera *camera, float3 point) {
   float screenY = rawY * focal + ((float)WINDOW_HEIGHT * 0.5f);
 
   return (float3){screenX, screenY, cameraSpace.z};
+}
+
+Frame frame;
+Frame *getFrame(RasterizerCamera *camera, RasterizerModel **models) {
+  // Clear frame data
+  frame.data = malloc(sizeof(float3) * WINDOW_WIDTH * WINDOW_HEIGHT);
+  for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
+    frame.data[i] = camera->backgroundColor;
+  }
+
+  for (int i = 0; models[i] != NULL; i++) {
+    drawModel(models[i], &frame, camera);
+  }
+  return &frame;
 }
