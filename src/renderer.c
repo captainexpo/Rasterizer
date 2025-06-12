@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 // Extern definitions
-RasterizerModel **RASTERIZER_MODEL_QUEUE;
-RasterizerCamera *RASTERIZER_MAIN_CAMERA;
+RasterizerModel **g_rasterizer_model_queue;
+RasterizerCamera *g_rasterizer_main_camera;
 
 float clamp(float value, float min, float max) {
   if (value < min)
@@ -92,7 +92,7 @@ inline float edgeFunc(float2 a, float2 b, float2 p) {
 }
 void drawModel(RasterizerModel *model, Frame *frame, RasterizerCamera *camera) {
 
-#pragma omp parallel for
+  // #pragma omp parallel for
   for (size_t i = 0; i < model->num_triangles; i++) {
     // printf("Drawing triangle %d\n", i);
     Face tri = model->tris[i];

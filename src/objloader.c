@@ -20,9 +20,6 @@ bool isOnlyWhitespace(char *str) {
 float3 parseVertex(char *buf) {
   float3 e;
   buf += 2;
-  // in this format:
-  //<float> <float> <float>
-  // assume one space
   sscanf(buf, "%f %f %f", &e.x, &e.y, &e.z);
   return e;
 }

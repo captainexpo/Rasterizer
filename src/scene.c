@@ -61,17 +61,27 @@ void sceneUpdate(float deltaTime) {
 
 void sceneStart(int argc, char **argv) {
   (void)argc;
-  models = malloc(sizeof(RasterizerModel *) * 2);
-  models[0] = loadOBJFile("../models/shambler.obj");
+  (void)argv;
+  models = malloc(sizeof(RasterizerModel *) * 3);
+  models[0] = loadOBJFile("../models/player.obj");
   models[0]->transform = (ModelTransform){
       .pitch = 0,
       .yaw = 0,
       .roll = M_PI,
-      .position = {0, 3, 25},
+      .position = {0, 0, 25},
       .scale = 0.1f,
   };
-  models[0]->texture = readPNGImage(argv[1]);
-  models[1] = NULL;
-  RASTERIZER_MODEL_QUEUE = models;
-  RASTERIZER_MAIN_CAMERA = &camera;
+  models[0]->texture = readPNGImage("../models/textures/quake_character.png");
+  models[1] = loadOBJFile("../models/shambler.obj");
+  models[1]->transform = (ModelTransform){
+      .pitch = M_PI,
+      .yaw = 0,
+      .roll = M_PI,
+      .position = {0, 0, 10},
+      .scale = 0.05f,
+  };
+  models[1]->texture = readPNGImage("../models/textures/shambler.png");
+  models[2] = NULL;
+  g_rasterizer_model_queue = models;
+  g_rasterizer_main_camera = &camera;
 }
