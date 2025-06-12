@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 RasterizerModel **models;
-RasterizerCamera camera = {
+RasterizerCamera mainCamera = {
     .FOV = 60.0f,
     .backgroundColor = {100, 100, 150},
     .transform =
@@ -28,33 +28,33 @@ void sceneUpdate(float deltaTime) {
   const float ROT_SPEED = 0.8f;
   const float MOVE_SPEED = 10.0f;
   if (IsKeyDown(KEY_LEFT))
-    camera.transform.yaw -= ROT_SPEED * deltaTime;
+    mainCamera.transform.yaw -= ROT_SPEED * deltaTime;
   if (IsKeyDown(KEY_RIGHT))
-    camera.transform.yaw += ROT_SPEED * deltaTime;
+    mainCamera.transform.yaw += ROT_SPEED * deltaTime;
   if (IsKeyDown(KEY_UP))
-    camera.transform.pitch += ROT_SPEED * deltaTime;
+    mainCamera.transform.pitch += ROT_SPEED * deltaTime;
   if (IsKeyDown(KEY_DOWN))
-    camera.transform.pitch -= ROT_SPEED * deltaTime;
+    mainCamera.transform.pitch -= ROT_SPEED * deltaTime;
   if (IsKeyDown(KEY_W))
-    camera.transform.position =
-        add3(camera.transform.position,
+    mainCamera.transform.position =
+        add3(mainCamera.transform.position,
              localToWorldDir((float3){0, 0, MOVE_SPEED * deltaTime},
-                             &camera.transform));
+                             &mainCamera.transform));
   if (IsKeyDown(KEY_S))
-    camera.transform.position =
-        add3(camera.transform.position,
+    mainCamera.transform.position =
+        add3(mainCamera.transform.position,
              localToWorldDir((float3){0, 0, -MOVE_SPEED * deltaTime},
-                             &camera.transform));
+                             &mainCamera.transform));
   if (IsKeyDown(KEY_A))
-    camera.transform.position =
-        add3(camera.transform.position,
+    mainCamera.transform.position =
+        add3(mainCamera.transform.position,
              localToWorldDir((float3){-MOVE_SPEED * deltaTime, 0, 0},
-                             &camera.transform));
+                             &mainCamera.transform));
   if (IsKeyDown(KEY_D))
-    camera.transform.position =
-        add3(camera.transform.position,
+    mainCamera.transform.position =
+        add3(mainCamera.transform.position,
              localToWorldDir((float3){MOVE_SPEED * deltaTime, 0, 0},
-                             &camera.transform));
+                             &mainCamera.transform));
 
   totalTime += deltaTime;
 }
@@ -82,6 +82,10 @@ void sceneStart(int argc, char **argv) {
   };
   models[1]->texture = readPNGImage("../models/textures/shambler.png");
   models[2] = NULL;
-  g_rasterizer_model_queue = models;
-  g_rasterizer_main_camera = &camera;
+}
+
+void onRender(void) {
+  for (RasterizerModel **m = models; *m != NULL; m++) {
+    addModelToQueue(*m);
+  }
 }

@@ -19,17 +19,23 @@ foreach(header ${HEADER_DIRS})
 endforeach()
 
 # Find OpenMP (after project()!)
-find_package(OpenMP REQUIRED)
 
 # Gather all source files
 file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
 
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Werror -O3 -fopenmp") 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra -Wpedantic -Werror -O3 -fopenmp") 
 
 add_executable(Rasterizer ${SOURCES})
 
+find_package(OpenMP)
+if(OpenMP_C_FOUND)
+  target_link_libraries(Rasterizer OpenMP::OpenMP_C)
+  target_compile_options(Rasterizer PRIVATE ${OpenMP_C_FLAGS})
+else()
+  message(WARNING "OpenMP not found, compiling without it.")
+endif()
 find_package(raylib REQUIRED)
 
-target_link_libraries(Rasterizer raylib m png OpenMP::OpenMP_C)
+target_link_libraries(Rasterizer raylib m png )
 

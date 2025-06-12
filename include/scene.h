@@ -1,15 +1,11 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "transform.h"
+#include "renderer.h"
 
 void sceneStart(int argc, char **argv);
 void sceneUpdate(float deltaTime);
-
-typedef struct {
-  float FOV;
-  float3 backgroundColor;
-  ModelTransform transform;
-} RasterizerCamera;
+void onRender(void);
+extern RasterizerCamera mainCamera;
 
 #endif

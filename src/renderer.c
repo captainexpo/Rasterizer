@@ -3,12 +3,29 @@
 #include "../include/model.h"
 #include "../include/transform.h"
 #include "../include/utils.h"
+#include "../include/window.h"
 #include <math.h>
+#include <raylib.h>
 #include <stdio.h>
 
-// Extern definitions
-RasterizerModel **g_rasterizer_model_queue;
-RasterizerCamera *g_rasterizer_main_camera;
+typedef struct ModelQueue {
+  RasterizerModel *model;
+  struct ModelQueue *next;
+} ModelQueue;
+
+Frame frame;
+ModelQueue *modelQueue = NULL;
+ModelQueue *lastModelQueue = NULL;
+
+void freeModelQueue(ModelQueue *head) {
+  ModelQueue *current = head;
+  while (current != NULL) {
+    // Don't free the model itself, just the queue node
+    ModelQueue *next = current->next;
+    free(current);
+    current = next;
+  }
+}
 
 float clamp(float value, float min, float max) {
   if (value < min)
@@ -23,9 +40,10 @@ float3 getColorAtPoint(RasterizerModel *model, float2 texCoord) {
   int rows = model->texture->rows;
 
   int x = ((int)(texCoord.x * cols) % cols + cols) % cols;
-  int y = rows - (((int)(texCoord.y * rows) % rows + rows) %
-                  rows); // HACK: Dunno why this needs to be inverted, but it
-                         // does ¯\_(ツ)_/¯
+
+  // NOTE: Dunno why this needs to be inverted
+  int y = rows - (((int)(texCoord.y * rows) % rows + rows) % rows);
+
   if (x < 0 || y < 0) {
     printf("Invalid texture coordinates: (%d, %d) for texture size (%d, %d) "
            "(%f, %f)\n",
@@ -37,12 +55,36 @@ float3 getColorAtPoint(RasterizerModel *model, float2 texCoord) {
 
 float depthBuffer[WINDOW_HEIGHT][WINDOW_WIDTH];
 
-void initFrame(void) {
+void addModelToQueue(RasterizerModel *model) {
+  if (modelQueue == NULL) {
+    modelQueue = malloc(sizeof(ModelQueue));
+    modelQueue->model = model;
+    modelQueue->next = NULL;
+    lastModelQueue = modelQueue;
+  } else {
+    ModelQueue *newNode = malloc(sizeof(ModelQueue));
+    newNode->model = model;
+    newNode->next = NULL;
+    lastModelQueue->next = newNode;
+    lastModelQueue = newNode;
+  }
+}
+
+void initFrame(RasterizerCamera *camera) {
+  freeModelQueue(modelQueue);
+  modelQueue = NULL;
+  lastModelQueue = NULL;
+
 #pragma omp parallel for collapse(2)
   for (int i = 0; i < WINDOW_HEIGHT; i++) {
     for (int j = 0; j < WINDOW_WIDTH; j++) {
       depthBuffer[i][j] = INFINITY;
     }
+  }
+  frame.data = malloc(sizeof(float3) * WINDOW_WIDTH * WINDOW_HEIGHT);
+#pragma omp parallel for
+  for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
+    frame.data[i] = camera->backgroundColor;
   }
 }
 float3 toLocalPoint(float3 world, RasterizerCamera *camera) {
@@ -52,16 +94,12 @@ float3 toLocalPoint(float3 world, RasterizerCamera *camera) {
   float cp = cosf(-camera->transform.pitch),
         sp = sinf(-camera->transform.pitch);
   float cr = cosf(-camera->transform.roll), sr = sinf(-camera->transform.roll);
-
-  // Yaw (Y axis)
   float3 yawed = {cy * relative.x + sy * relative.z, relative.y,
                   -sy * relative.x + cy * relative.z};
 
-  // Pitch (X axis)
   float3 pitched = {yawed.x, cp * yawed.y - sp * yawed.z,
                     sp * yawed.y + cp * yawed.z};
 
-  // Roll (Z axis)
   float3 rolled = {cr * pitched.x - sr * pitched.y,
                    sr * pitched.x + cr * pitched.y, pitched.z};
 
@@ -91,10 +129,7 @@ inline float edgeFunc(float2 a, float2 b, float2 p) {
   return (p.x - a.x) * (b.y - a.y) - (p.y - a.y) * (b.x - a.x);
 }
 void drawModel(RasterizerModel *model, Frame *frame, RasterizerCamera *camera) {
-
-  // #pragma omp parallel for
   for (size_t i = 0; i < model->num_triangles; i++) {
-    // printf("Drawing triangle %d\n", i);
     Face tri = model->tris[i];
     float3 world_a = toWorldPoint(&model->transform, model->points[tri.ia]);
     float3 world_b = toWorldPoint(&model->transform, model->points[tri.ib]);
@@ -109,7 +144,6 @@ void drawModel(RasterizerModel *model, Frame *frame, RasterizerCamera *camera) {
     float3 c = worldPointToScreen(camera, view_c);
 
     if (a.z <= 0.0001f || b.z <= 0.0001f || c.z <= 0.0001f) {
-      // printf("Skipping triangle %d due to backface culling\n", i);
       continue; // Skip triangles that are behind the camera
     }
 
@@ -118,7 +152,7 @@ void drawModel(RasterizerModel *model, Frame *frame, RasterizerCamera *camera) {
     float3 ac = sub3(c, a);
     float crossZ = ab.x * ac.y - ab.y * ac.x;
     if (crossZ > 0)
-      continue; // or > 0 depending on winding
+      continue;
 
     float minx = min(min(a.x, b.x), c.x);
     float maxx = max(max(a.x, b.x), c.x);
@@ -148,7 +182,7 @@ void drawModel(RasterizerModel *model, Frame *frame, RasterizerCamera *camera) {
 
     for (int y = starty; y <= endy; y++) {
       for (int x = startx; x <= endx; x++) {
-        float2 p = {x + 0.5f, y + 0.5f}; // center of pixel
+        float2 p = {x + 0.5f, y + 0.5f};
 
         float w0 = edgeFunc(v1, v2, p);
         float w1 = edgeFunc(v2, v0, p);
@@ -196,16 +230,19 @@ float3 worldPointToScreen(RasterizerCamera *camera, float3 point) {
   return (float3){screenX, screenY, cameraSpace.z};
 }
 
-Frame frame;
-Frame *getFrame(RasterizerCamera *camera, RasterizerModel **models) {
-  // Clear frame data
-  frame.data = malloc(sizeof(float3) * WINDOW_WIDTH * WINDOW_HEIGHT);
-  for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++) {
-    frame.data[i] = camera->backgroundColor;
-  }
-
-  for (int i = 0; models[i] != NULL; i++) {
-    drawModel(models[i], &frame, camera);
+Frame *getFrame(RasterizerCamera *camera, ModelQueue *queue) {
+  ModelQueue *current = queue;
+  while (current != NULL) {
+    drawModel(current->model, &frame, camera);
+    current = current->next;
   }
   return &frame;
+}
+
+void renderFrame(RasterizerCamera *camera) {
+  Frame *frame = getFrame(camera, modelQueue);
+  BeginDrawing();
+  drawFrame(frame);
+  EndDrawing();
+  free(frame->data);
 }
