@@ -1,8 +1,13 @@
 
-#include "../include/renderer.h"
 #include "../include/scene.h"
-#include "../include/window.h"
+
+// External libraries
 #include "raylib.h"
+
+// Internal libraries
+#include "renderer.h"
+#include "window.h"
+
 #include <stdlib.h>
 #include <time.h>
 

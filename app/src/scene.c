@@ -1,9 +1,9 @@
-#include "../include/scene.h"
-#include "../include/datatypes.h"
-#include "../include/model.h"
-#include "../include/objloader.h"
-#include "../include/renderer.h"
-#include "../include/transform.h"
+#include "scene.h"
+#include "datatypes.h"
+#include "model.h"
+#include "objloader.h"
+#include "renderer.h"
+#include "transform.h"
 #include <math.h>
 #include <raylib.h>
 #include <stdio.h>
@@ -63,7 +63,7 @@ void sceneStart(int argc, char **argv) {
   (void)argc;
   (void)argv;
   models = malloc(sizeof(RasterizerModel *) * 3);
-  models[0] = loadOBJFile("../models/player.obj");
+  models[0] = loadOBJFile("../../models/player.obj");
   models[0]->transform = (ModelTransform){
       .pitch = 0,
       .yaw = 0,
@@ -71,8 +71,9 @@ void sceneStart(int argc, char **argv) {
       .position = {0, 0, 25},
       .scale = 0.1f,
   };
-  models[0]->texture = readPNGImage("../models/textures/quake_character.png");
-  models[1] = loadOBJFile("../models/shambler.obj");
+  models[0]->texture =
+      readPNGImage("../../models/textures/quake_character.png");
+  models[1] = loadOBJFile("../../models/shambler.obj");
   models[1]->transform = (ModelTransform){
       .pitch = M_PI,
       .yaw = 0,
@@ -80,7 +81,7 @@ void sceneStart(int argc, char **argv) {
       .position = {0, 0, 10},
       .scale = 0.05f,
   };
-  models[1]->texture = readPNGImage("../models/textures/shambler.png");
+  models[1]->texture = readPNGImage("../../models/textures/shambler.png");
   models[2] = NULL;
 }
 

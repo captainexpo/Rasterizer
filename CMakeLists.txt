@@ -1,41 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
-project(Rasterizer C)  # Add CXX here if you use C++ sources
+project(Rasterizer C)
 
-# Set C standard
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+# Set C flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra -Wpedantic -Werror -O3 -fopenmp")
 
-# Set compiler explicitly (optional)
-set(CMAKE_C_COMPILER gcc)
-#set(CMAKE_BUILD_TYPE Debug)
-
-# Recursively include all directories under /header
-file(GLOB_RECURSE HEADER_DIRS RELATIVE ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/header/*.h)
-foreach(header ${HEADER_DIRS})
-    get_filename_component(dir ${header} DIRECTORY)
-    include_directories(${CMAKE_SOURCE_DIR}/${dir})
-endforeach()
-
-# Find OpenMP (after project()!)
-
-# Gather all source files
-file(GLOB_RECURSE SOURCES ${CMAKE_SOURCE_DIR}/src/*.c)
-
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native -Wall -Wextra -Wpedantic -Werror -O3 -fopenmp") 
-
-add_executable(Rasterizer ${SOURCES})
-
-find_package(OpenMP)
-if(OpenMP_C_FOUND)
-  target_link_libraries(Rasterizer OpenMP::OpenMP_C)
-  target_compile_options(Rasterizer PRIVATE ${OpenMP_C_FLAGS})
-else()
-  message(WARNING "OpenMP not found, compiling without it.")
-endif()
-find_package(raylib REQUIRED)
-
-target_link_libraries(Rasterizer raylib m png )
+# Add subdirectories
+add_subdirectory(lib)
+add_subdirectory(app)
 
