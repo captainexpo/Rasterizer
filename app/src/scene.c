@@ -1,7 +1,7 @@
 #include "scene.h"
+#include "../include/objloader.h"
 #include "datatypes.h"
 #include "model.h"
-#include "objloader.h"
 #include "renderer.h"
 #include "transform.h"
 #include <math.h>
