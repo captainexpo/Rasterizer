@@ -59,30 +59,28 @@ void sceneUpdate(float deltaTime) {
   totalTime += deltaTime;
 }
 
-void sceneStart(int argc, char **argv) {
+void sceneStart(int argc, char *argv[]) {
+  printf("Called scenestart\n");
   (void)argc;
   (void)argv;
   models = malloc(sizeof(RasterizerModel *) * 3);
-  models[0] = loadOBJFile("../../models/player.obj");
+  models[0] = loadOBJFile(
+      "/Users/captainexpo/Documents/GitHub/Rasterizer/assets/chthon/model.obj");
   models[0]->transform = (ModelTransform){
-      .pitch = 0,
-      .yaw = 0,
-      .roll = M_PI,
+      .pitch = M_PI / 2,
+      .yaw = M_PI / 2,
+      .roll = 0,
       .position = {0, 0, 25},
       .scale = 0.1f,
   };
-  models[0]->texture =
-      readPNGImage("../../models/textures/quake_character.png");
-  models[1] = loadOBJFile("../../models/shambler.obj");
-  models[1]->transform = (ModelTransform){
-      .pitch = M_PI,
-      .yaw = 0,
-      .roll = M_PI,
-      .position = {0, 0, 10},
-      .scale = 0.05f,
-  };
-  models[1]->texture = readPNGImage("../../models/textures/shambler.png");
+  models[0]->texture = readPNGImage(
+      "/Users/captainexpo/Documents/GitHub/Rasterizer/assets/chthon/tex.png");
+  models[1] = NULL;
   models[2] = NULL;
+}
+
+void onDrawUI(void) {
+  DrawText(TextFormat("FPS: %d", GetFPS()), 0, 0, 30, WHITE);
 }
 
 void onRender(void) {

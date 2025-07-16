@@ -1,7 +1,6 @@
 #include "../include/window.h"
 #include "raylib.h"
 #include "stdlib.h"
-#include <stdio.h>
 
 Color float3ToColor(float3 in) {
   return (Color){
@@ -12,7 +11,7 @@ Color float3ToColor(float3 in) {
   };
 }
 Texture2D tex;
-int drawFrame(Frame *frame) {
+int drawFrame(Frame *frame, int winWidth, int winHeight) {
   UnloadTexture(tex); // Unload the texture
   float3 *fd = frame->data;
 
@@ -39,9 +38,12 @@ int drawFrame(Frame *frame) {
 
   // Draw the texture to the screen
 
-  DrawTextureEx(tex, (Vector2){0, 0}, 0,
-                (float)REAL_WINDOW_HEIGHT / WINDOW_HEIGHT, WHITE);
+  DrawTextureEx(tex, (Vector2){0, 0}, 0, (float)winWidth / (float)WINDOW_WIDTH,
+                WHITE);
 
   free(colorData);
+
+  (void)winHeight;
+
   return 0;
 }

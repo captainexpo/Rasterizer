@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "datatypes.h"
 #include "pngreader.h"
 #include "transform.h"
 #include <stdlib.h>
@@ -12,6 +13,8 @@ typedef struct {
   int vn[3]; // Normal indices (not used yet)
 } Face;
 
+struct RasterizerMaterial;
+
 typedef struct {
   ModelTransform transform;
 
@@ -21,6 +24,7 @@ typedef struct {
   size_t num_points;
   float2 *tex_coords;
 
+  float4 flatColor;
   TexImage *texture; // Should support multiple textures in the future
 } RasterizerModel;
 

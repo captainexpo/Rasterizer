@@ -15,7 +15,7 @@
 
 /*
  * Copyright 2002-2010 Guillaume Cottenceau.
- *
+
  * This software may be freely redistributed under the terms
  * of the X11 license.
  *
@@ -42,7 +42,7 @@ TexImage *readPNGImage(char *filename) {
   }
 
   fread(header, 1, 8, fp);
-  if (png_sig_cmp((const unsigned char *)header, 0, 8)) {
+  if (png_sig_cmp((unsigned char *)header, 0, 8)) {
     fprintf(stderr, "[read_png_file] File %s is not recognized as a PNG file",
             filename);
     return NULL;

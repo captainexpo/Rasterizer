@@ -12,6 +12,5 @@ float3 worldPointToScreen(RasterizerCamera *camera, float3 point);
 void addModelToQueue(RasterizerModel *model);
 void initFrame(RasterizerCamera *camera);
 // Frame *getFrame(RasterizerCamera *camera, RasterizerModel **models);
-void renderFrame(RasterizerCamera *camera);
-
+void renderFrame(RasterizerCamera *camera, int winWidth, int winHeight);
 #endif

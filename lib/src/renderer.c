@@ -36,6 +36,8 @@ float clamp(float value, float min, float max) {
 }
 
 float3 getColorAtPoint(RasterizerModel *model, float2 texCoord) {
+  if (model->flatColor.w != 0)
+    return (float3){model->flatColor.x, model->flatColor.y, model->flatColor.z};
   int cols = model->texture->cols;
   int rows = model->texture->rows;
 
@@ -239,10 +241,8 @@ Frame *getFrame(RasterizerCamera *camera, ModelQueue *queue) {
   return &frame;
 }
 
-void renderFrame(RasterizerCamera *camera) {
+void renderFrame(RasterizerCamera *camera, int winWidth, int winHeight) {
   Frame *frame = getFrame(camera, modelQueue);
-  BeginDrawing();
-  drawFrame(frame);
-  EndDrawing();
+  drawFrame(frame, winWidth, winHeight);
   free(frame->data);
 }

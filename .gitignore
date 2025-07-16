@@ -4,7 +4,6 @@
 # Object files
 *.o
 *.ko
-*.obj
 *.elf
 
 # Linker output
@@ -52,8 +51,7 @@ Mkfile.old
 dkms.conf
 
 build/
-models/
 .vscode/
 .cache/
 compile_commands.json
-
+.venv/
